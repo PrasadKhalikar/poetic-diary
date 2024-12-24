@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write Poem</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Poem Diary</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('routes.dashboard') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('routes.logout') }}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info" role="alert">
+                    {{ messages[0] }}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Poem Writing Form -->
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title text-center">Write a New Poem</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            {{ form.hidden_tag() }}
+                            <div class="mb-3">
+                                {{ form.title.label(class="form-label") }}
+                                {{ form.title(class="form-control") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.content.label(class="form-label") }}
+                                {{ form.content(class="form-control", rows="4") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.public.label(class="form-label") }}
+                                {{ form.public(class="form-check-input") }}
+                                {{ form.public.label(class="form-check-label") }}
+                            </div>
+                            <div class="text-center">
+                                {{ form.submit(class="btn btn-primary w-100") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Synonym Search Section -->
+    <div class="container mt-5">
+        <h2>Find Synonyms</h2>
+        <form id="synonym-form">
+            <label for="word" class="form-label">Enter a word:</label>
+            <input type="text" id="word" name="word" class="form-control" required>
+            <button type="button" id="fetch-synonyms" class="btn btn-primary mt-3">Get Synonyms</button>
+        </form>
+        <div id="synonyms" class="mt-3">
+            <h3>Synonyms:</h3>
+            <ul id="synonym-list"></ul>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.getElementById('fetch-synonyms').addEventListener('click', async () => {
+            const word = document.getElementById('word').value;
+            if (!word) {
+                alert('Please enter a word');
+                return;
+            }
+            try {
+                const response = await fetch(`/api/synonyms?word=${word}`);
+                const data = await response.json();
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    const list = document.getElementById('synonym-list');
+                    list.innerHTML = ''; // Clear previous results
+                    data.synonyms.forEach(synonym => {
+                        const li = document.createElement('li');
+                        li.textContent = synonym;
+                        list.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching synonyms:', error);
+                alert('Failed to fetch synonyms. Please try again.');
+            }
+        });
+    </script>
+
+</body>
+</html>
